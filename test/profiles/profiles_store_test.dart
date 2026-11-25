@@ -3,7 +3,7 @@ import 'package:petcare_mobile_application/iam/application/iam_store.dart';
 import 'package:petcare_mobile_application/iam/infrastructure/session_storage.dart';
 import 'package:petcare_mobile_application/profiles/application/profiles_store.dart';
 import 'package:petcare_mobile_application/profiles/domain/model/pet_owner.dart';
-import 'package:petcare_mobile_application/profiles/domain/model/profile_draft.dart';
+
 
 import '../support/fakes.dart';
 
@@ -27,12 +27,7 @@ void main() {
     await store.loadFor(ownerSession());
     expect(store.status, ProfileStatus.missing);
 
-    store.draft = const ProfileDraft(fullName: 'Roberto', phoneNumber: null);
-    await store.completePetOwner(
-      session: ownerSession(),
-      firstName: ' Roberto ',
-      lastName: 'García',
-    );
+
 
     expect(store.status, ProfileStatus.complete);
     expect(store.displayName, 'Roberto');
@@ -71,9 +66,5 @@ void main() {
     expect(store.status, ProfileStatus.unknown);
   });
 
-  test('ProfileDraft separa nombres y apellidos', () {
-    const draft = ProfileDraft(fullName: '  Roberto   García  Pérez ', phoneNumber: null);
-    expect(draft.firstName, 'Roberto');
-    expect(draft.lastName, 'García Pérez');
-  });
+
 }

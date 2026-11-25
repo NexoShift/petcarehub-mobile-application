@@ -1,4 +1,6 @@
-/// Perfil del dueño (PetOwnerResource). Por ahora solo lo que usa la app.
+import 'person_sex.dart';
+
+/// Perfil del dueño (PetOwnerResource).
 class PetOwner {
   const PetOwner({
     required this.id,
@@ -7,6 +9,7 @@ class PetOwner {
     required this.lastName,
     required this.email,
     this.phoneNumber,
+    this.sex,
     this.profileImageUrl,
   });
 
@@ -16,15 +19,8 @@ class PetOwner {
   final String lastName;
   final String email;
   final String? phoneNumber;
+  final PersonSex? sex;
   final String? profileImageUrl;
 
-  factory PetOwner.fromJson(Map<String, dynamic> json) => PetOwner(
-    id: (json['id'] as num).toInt(),
-    userId: (json['userId'] as num).toInt(),
-    firstName: json['firstName'] as String? ?? '',
-    lastName: json['lastName'] as String? ?? '',
-    email: json['email'] as String? ?? '',
-    phoneNumber: json['phoneNumber'] as String?,
-    profileImageUrl: json['profileImageUrl'] as String?,
-  );
+  String get fullName => '$firstName $lastName'.trim();
 }
