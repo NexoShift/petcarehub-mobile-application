@@ -20,9 +20,12 @@ class StatusChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[Icon(icon, size: 12, color: color), const SizedBox(width: 4)],
-          Text(
-            label,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+          // Flexible: una etiqueta larga baja de línea en vez de desbordarse.
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+            ),
           ),
         ],
       ),

@@ -12,6 +12,14 @@ class Formatters {
     return '${local.day} ${_months[local.month - 1]} ${local.year}';
   }
 
+  /// 12 sep 2026, 10:45
+  static String dateTime(DateTime value) {
+    final local = value.toLocal();
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '${date(value)}, $hour:$minute';
+  }
+
   /// "3 años", "1 año", "5 meses", "Menos de 1 mes".
   static String age(DateTime birthDate, {DateTime? now}) {
     final today = now ?? DateTime.now();
