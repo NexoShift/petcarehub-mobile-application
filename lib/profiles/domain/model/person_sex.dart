@@ -6,4 +6,7 @@ enum PersonSex {
 
   final String apiValue;
   final String label;
+
+  static PersonSex? fromApi(String? value) =>
+      PersonSex.values.where((sex) => sex.apiValue == value).firstOrNull;
 }

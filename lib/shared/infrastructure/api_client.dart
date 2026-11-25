@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import '../domain/api_error.dart';
+import '../domain/picked_image.dart';
 import 'environment.dart';
 import 'token_provider.dart';
 
@@ -38,15 +40,45 @@ class ApiClient {
   Future<dynamic> put(String path, {Object? body}) =>
       _send(() => _http.put(uri(path), headers: _headers(json: true), body: jsonEncode(body)));
 
-  /// Para los endpoints @ModelAttribute / multipart (crear perfil, mascota, etc.).
-  /// Los campos nulos no se envían.
-  Future<dynamic> postMultipart(String path, Map<String, String?> fields) {
-    final request = http.MultipartRequest('POST', uri(path))
+  /// POST multipart para los endpoints @ModelAttribute (crear perfil, mascota...).
+  /// Los campos nulos no se envían. [files] van como partes de archivo.
+  Future<dynamic> postMultipart(
+    String path,
+    Map<String, String?> fields, {
+    Map<String, PickedImage> files = const {},
+  }) =>
+      _multipart('POST', path, fields, files);
+
+  /// PUT multipart, para reemplazar fotos (PUT /pets/{id}/image).
+  Future<dynamic> putMultipart(
+    String path, {
+    Map<String, String?> fields = const {},
+    Map<String, PickedImage> files = const {},
+  }) =>
+      _multipart('PUT', path, fields, files);
+
+  Future<dynamic> _multipart(
+    String method,
+    String path,
+    Map<String, String?> fields,
+    Map<String, PickedImage> files,
+  ) {
+    final request = http.MultipartRequest(method, uri(path))
       ..headers.addAll(_headers())
       ..fields.addAll({
         for (final entry in fields.entries)
           if (entry.value != null) entry.key: entry.value!,
-      });
+      })
+      ..files.addAll([
+        for (final entry in files.entries)
+          http.MultipartFile.fromBytes(
+            entry.key,
+            entry.value.bytes,
+            filename: entry.value.fileName,
+            // El backend valida el Content-Type de la parte (jpeg, png o webp).
+            contentType: MediaType.parse(entry.value.mimeType),
+          ),
+      ]);
     return _send(() async => http.Response.fromStream(await _http.send(request)));
   }
 

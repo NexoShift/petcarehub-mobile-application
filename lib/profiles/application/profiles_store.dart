@@ -2,15 +2,17 @@ import 'package:flutter/foundation.dart';
 
 import '../../iam/application/iam_store.dart';
 import '../../iam/domain/model/user_session.dart';
+import '../../shared/domain/picked_image.dart';
 import '../domain/model/clinic.dart';
 import '../domain/model/person_sex.dart';
 import '../domain/model/pet_owner.dart';
 import '../domain/model/profile_draft.dart';
+import '../domain/model/veterinarian.dart';
 import '../domain/repositories/profiles_repository.dart';
 
 enum ProfileStatus { unknown, missing, complete }
 
-/// Estado del perfil del usuario autenticado (paso 2 del onboarding).
+/// Perfil del usuario autenticado: dueño, clínica (admin) o veterinario.
 ///
 /// Escucha a IamStore: si cambia la sesión (login, logout, 401) vuelve a "unknown"
 /// para que el router lo cargue de nuevo.
@@ -25,6 +27,7 @@ class ProfilesStore extends ChangeNotifier {
   ProfileStatus _status = ProfileStatus.unknown;
   PetOwner? _petOwner;
   Clinic? _clinic;
+  Veterinarian? _veterinarian;
   int? _loadedForUserId;
 
   /// Datos del paso 1 del registro para prellenar el paso 2.
@@ -33,19 +36,31 @@ class ProfilesStore extends ChangeNotifier {
   ProfileStatus get status => _status;
   PetOwner? get petOwner => _petOwner;
   Clinic? get clinic => _clinic;
+  Veterinarian? get veterinarian => _veterinarian;
 
-  /// Nombre para el saludo del inicio ("¡Hola, Roberto!").
-  String get displayName => _petOwner?.firstName ?? _clinic?.name ?? '';
+  /// Clínica con la que trabaja el usuario: la suya si es admin, la del vet si es miembro.
+  int? get clinicId => _clinic?.id ?? _veterinarian?.clinicId;
+
+  /// Nombre para el saludo ("¡Hola, Roberto!").
+  String get displayName =>
+      _petOwner?.firstName ?? _veterinarian?.firstName ?? _clinic?.name ?? '';
 
   Future<void> loadFor(UserSession session) async {
+    _petOwner = null;
+    _clinic = null;
+    _veterinarian = null;
     if (session.isPetOwner) {
       _petOwner = await _repository.findPetOwnerByUserId(session.userId);
       _status = _petOwner == null ? ProfileStatus.missing : ProfileStatus.complete;
     } else if (session.isClinicAdmin) {
       _clinic = await _repository.findClinicByAccountId(session.accountId);
+      _veterinarian = await _repository.findVeterinarianByUserId(session.userId);
       _status = _clinic == null ? ProfileStatus.missing : ProfileStatus.complete;
     } else {
-      // Vet miembro: su perfil lo registra la clínica desde la web.
+      // Vet miembro: su perfil lo registra la clínica desde la web. Si aún no
+      // existe, igual entra (el inicio le explica qué falta).
+      _veterinarian = await _repository.findVeterinarianByUserId(session.userId);
+      if (_veterinarian != null) _clinic = await _repository.getClinic(_veterinarian!.clinicId);
       _status = ProfileStatus.complete;
     }
     _loadedForUserId = session.userId;
@@ -87,6 +102,32 @@ class ProfilesStore extends ChangeNotifier {
     _complete();
   }
 
+  /// Edita los datos personales del dueño ("Mi perfil").
+  Future<void> updatePetOwner({
+    required String firstName,
+    required String lastName,
+    String? phoneNumber,
+    PersonSex? sex,
+  }) async {
+    final owner = _petOwner;
+    if (owner == null) return;
+    _petOwner = await _repository.updatePetOwner(
+      petOwnerId: owner.id,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      phoneNumber: phoneNumber,
+      sex: sex,
+    );
+    notifyListeners();
+  }
+
+  Future<void> updatePetOwnerImage(PickedImage image) async {
+    final owner = _petOwner;
+    if (owner == null) return;
+    _petOwner = await _repository.updatePetOwnerImage(petOwnerId: owner.id, image: image);
+    notifyListeners();
+  }
+
   void _complete() {
     draft = null;
     _status = ProfileStatus.complete;
@@ -98,6 +139,7 @@ class ProfilesStore extends ChangeNotifier {
     _status = ProfileStatus.unknown;
     _petOwner = null;
     _clinic = null;
+    _veterinarian = null;
     _loadedForUserId = null;
     notifyListeners();
   }

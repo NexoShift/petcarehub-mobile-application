@@ -76,4 +76,31 @@ void main() {
     expect(draft.firstName, 'Roberto');
     expect(draft.lastName, 'García Pérez');
   });
+
+  test('vet miembro carga su perfil y su clínica', () async {
+    repository.clinicsByAccountId[20] = vetSur;
+    repository.vetsByUserId[3] = drMendoza;
+    await store.loadFor(clinicMemberSession());
+    expect(store.veterinarian!.fullName, 'Francisco Mendoza');
+    expect(store.clinicId, 5);
+    expect(store.displayName, 'Francisco');
+  });
+
+  test('vet miembro sin perfil: entra pero sin clínica', () async {
+    await store.loadFor(clinicMemberSession());
+    expect(store.status, ProfileStatus.complete);
+    expect(store.clinicId, isNull);
+  });
+
+  test('editar datos y foto del dueño', () async {
+    repository.petOwnersByUserId[1] = roberto;
+    await store.loadFor(ownerSession());
+
+    await store.updatePetOwner(firstName: ' Beto ', lastName: 'García', phoneNumber: null);
+    expect(store.petOwner!.firstName, 'Beto');
+    expect(store.petOwner!.phoneNumber, isNull);
+
+    await store.updatePetOwnerImage(fakeImage());
+    expect(repository.imageUploads, 1);
+  });
 }
