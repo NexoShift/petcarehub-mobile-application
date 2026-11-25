@@ -20,6 +20,17 @@ class UserSession {
   final bool mustChangePassword;
   final String token;
 
+  /// Copia con la contraseña temporal ya cambiada.
+  UserSession withPasswordChanged() => UserSession(
+        userId: userId,
+        accountId: accountId,
+        accountType: accountType,
+        email: email,
+        roles: roles,
+        mustChangePassword: false,
+        token: token,
+      );
+
   bool hasRole(String role) => roles.contains(role);
 
   bool get isPetOwner => hasRole('ROLE_PET_OWNER');

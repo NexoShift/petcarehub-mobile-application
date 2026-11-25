@@ -100,4 +100,27 @@ void main() {
     expect(store.session, isNull);
     expect(storage.token, isNull);
   });
+
+  test('cambiar contraseña con la actual correcta', () async {
+    repository.addAccount('Temporal123', clinicMemberSession(mustChangePassword: true));
+    await store.signIn(email: 'vet@vetsur.pe', password: 'Temporal123');
+    expect(store.session!.mustChangePassword, isTrue);
+
+    await store.changePassword(currentPassword: 'Temporal123', newPassword: 'NuevaClave1');
+
+    expect(store.session!.mustChangePassword, isFalse);
+    await store.signOut();
+    await store.signIn(email: 'vet@vetsur.pe', password: 'NuevaClave1');
+    expect(store.isAuthenticated, isTrue);
+  });
+
+  test('cambiar contraseña con la actual incorrecta lanza 400 y no cambia nada', () async {
+    await store.signIn(email: 'roberto@example.com', password: 'Secreta123');
+
+    await expectLater(
+      store.changePassword(currentPassword: 'mala', newPassword: 'NuevaClave1'),
+      throwsA(isA<ApiError>().having((e) => e.status, 'status', 400)),
+    );
+    expect(store.isAuthenticated, isTrue);
+  });
 }

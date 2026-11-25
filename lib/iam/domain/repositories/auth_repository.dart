@@ -15,6 +15,13 @@ abstract interface class AuthRepository {
   /// Pide el correo de recuperación. El enlace abre la web (reset-password).
   Future<void> requestPasswordRecovery(String email);
 
+  /// PUT /users/{userId}/password. Un 400 significa que la contraseña actual no coincide.
+  Future<void> changePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  });
+
   /// Valida un token guardado con GET /users/me y devuelve la sesión actualizada.
   Future<UserSession> restore(String token);
 }

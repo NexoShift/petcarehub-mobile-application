@@ -36,6 +36,18 @@ class AuthApi implements AuthRepository {
   }
 
   @override
+  Future<void> changePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _client.put('/users/$userId/password', body: {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+  }
+
+  @override
   Future<UserSession> restore(String token) async {
     final json = await _client.get('/users/me') as Map<String, dynamic>;
     return UserSessionAssembler.fromUser(json, token);

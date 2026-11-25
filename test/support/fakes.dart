@@ -27,13 +27,13 @@ UserSession clinicAdminSession() => const UserSession(
   token: 'jwt-clinic',
 );
 
-UserSession clinicMemberSession() => const UserSession(
+UserSession clinicMemberSession({bool mustChangePassword = false}) => UserSession(
   userId: 3,
   accountId: 20,
   accountType: AccountType.clinic,
   email: 'vet@vetsur.pe',
-  roles: ['ROLE_VETERINARIAN'],
-  mustChangePassword: false,
+  roles: const ['ROLE_VETERINARIAN'],
+  mustChangePassword: mustChangePassword,
   token: 'jwt-vet',
 );
 
@@ -96,6 +96,23 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> requestPasswordRecovery(String email) async {
     _throwIfQueued();
     recoveryRequests.add(email);
+  }
+
+  @override
+  Future<void> changePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    _throwIfQueued();
+    final entry = accounts.entries.firstWhere((e) => e.value.session.userId == userId);
+    if (entry.value.password != currentPassword) {
+      throw const ApiError(status: 400, message: 'Current password is incorrect');
+    }
+    accounts[entry.key] = (
+      password: newPassword,
+      session: entry.value.session.withPasswordChanged(),
+    );
   }
 
   @override

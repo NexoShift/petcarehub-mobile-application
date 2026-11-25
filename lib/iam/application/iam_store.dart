@@ -67,6 +67,20 @@ class IamStore extends ChangeNotifier {
   Future<void> requestPasswordRecovery(String email) =>
       _repository.requestPasswordRecovery(email.trim());
 
+  /// Cambia la contraseña del usuario autenticado. Si era temporal
+  /// (vet creado por la clínica), el router lo deja pasar al inicio.
+  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
+    final session = _session;
+    if (session == null) return;
+    await _repository.changePassword(
+      userId: session.userId,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+    _session = session.withPasswordChanged();
+    notifyListeners();
+  }
+
   Future<void> signOut() async {
     await _storage.clear();
     _setUnauthenticated();
