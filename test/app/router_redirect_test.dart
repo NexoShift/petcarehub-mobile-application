@@ -71,4 +71,21 @@ void main() {
     expect(go(AppRoutes.boot), AppRoutes.changePassword);
     expect(go(AppRoutes.changePassword), isNull);
   });
+
+  test('guard por rol: el vet no entra a /pets y el dueño no entra a /patients', () async {
+    await iam.signIn(email: 'admin@vetsur.pe', password: 'Secreta123');
+    await profiles.completeClinic(session: iam.session!, name: 'VetSur');
+    expect(go(AppRoutes.pets), AppRoutes.home);
+    expect(go(AppRoutes.pet(3)), AppRoutes.home);
+    expect(go(AppRoutes.patient(3)), isNull);
+
+    await iam.signOut();
+    profilesRepo.petOwnersByUserId[1] = roberto;
+    await iam.signIn(email: 'roberto@example.com', password: 'Secreta123');
+    await profiles.loadFor(iam.session!);
+    expect(go(AppRoutes.patient(3)), AppRoutes.home);
+    expect(go(AppRoutes.pet(3)), isNull);
+    expect(go(AppRoutes.newPet), isNull);
+    expect(go(AppRoutes.profile), isNull);
+  });
 }

@@ -11,10 +11,12 @@ import '../support/fakes.dart';
 void main() {
   late FakeAuthRepository auth;
   late FakeProfilesRepository profiles;
+  late FakePetsRepository pets;
 
   setUp(() {
     auth = FakeAuthRepository()..addAccount('Secreta123', ownerSession());
     profiles = FakeProfilesRepository();
+    pets = FakePetsRepository();
   });
 
   Future<void> pumpApp(WidgetTester tester, {String? savedToken}) async {
@@ -26,6 +28,9 @@ void main() {
         storage: InMemorySessionStorage(initialToken: savedToken),
         authRepository: auth,
         profilesRepository: profiles,
+        petsRepository: pets,
+        consultationsRepository: FakeConsultationsRepository(),
+        imagePicker: FakeImagePicker(),
         useGoogleFonts: false,
       ),
     );
@@ -175,7 +180,9 @@ void main() {
     await tester.enterText(find.byKey(const Key('clinic.name')), 'Clínica VetSur');
     await tapAndSettle(tester, find.byKey(const Key('clinic.submit')));
 
-    expect(find.text('¡Hola, Clínica VetSur!'), findsOneWidget);
+    // El admin llega al directorio de pacientes (MM-13) de su clínica.
+    expect(find.text('Clínica VetSur'), findsOneWidget);
+    expect(find.text('Aún no tienes pacientes'), findsOneWidget);
   });
 
   testWidgets('con token guardado y perfil entra directo al inicio', (tester) async {
@@ -190,7 +197,8 @@ void main() {
 
     expect(find.text('¡Hola, Roberto!'), findsOneWidget);
 
-    await tapAndSettle(tester, find.byTooltip('Cerrar sesión'));
+    await tapAndSettle(tester, find.text('Perfil'));
+    await tapAndSettle(tester, find.text('Cerrar sesión'));
     expect(find.text('Comenzar'), findsOneWidget);
   });
 
