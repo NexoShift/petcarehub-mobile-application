@@ -63,4 +63,12 @@ void main() {
     expect(go(AppRoutes.completeClinic), AppRoutes.home);
     expect(go(AppRoutes.home), isNull);
   });
+
+  test('vet con contraseña temporal solo puede ir a cambiarla', () async {
+    auth.addAccount('Temporal123', clinicMemberSession(mustChangePassword: true));
+    await iam.signIn(email: 'vet@vetsur.pe', password: 'Temporal123');
+    expect(go(AppRoutes.home), AppRoutes.changePassword);
+    expect(go(AppRoutes.boot), AppRoutes.changePassword);
+    expect(go(AppRoutes.changePassword), isNull);
+  });
 }

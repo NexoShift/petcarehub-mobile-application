@@ -6,6 +6,7 @@ class AppRoutes {
   static const welcome = '/welcome';
   static const signIn = '/sign-in';
   static const signUp = '/sign-up';
+  static const changePassword = '/change-password';
   static const completePetOwner = '/complete-profile/pet-owner';
   static const completeClinic = '/complete-profile/clinic';
   static const home = '/home';

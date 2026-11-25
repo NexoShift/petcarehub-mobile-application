@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../home/presentation/views/home_view.dart';
 import '../iam/application/iam_store.dart';
+import '../iam/presentation/views/change_password_view.dart';
 import '../iam/presentation/views/sign_in_view.dart';
 import '../iam/presentation/views/sign_up_view.dart';
 import '../iam/presentation/views/welcome_view.dart';
@@ -25,6 +26,7 @@ GoRouter createRouter({required IamStore iam, required ProfilesStore profiles}) 
       GoRoute(path: AppRoutes.welcome, builder: (_, _) => const WelcomeView()),
       GoRoute(path: AppRoutes.signIn, builder: (_, _) => const SignInView()),
       GoRoute(path: AppRoutes.signUp, builder: (_, _) => const SignUpView()),
+      GoRoute(path: AppRoutes.changePassword, builder: (_, _) => const ChangePasswordView()),
       GoRoute(
         path: AppRoutes.completePetOwner,
         builder: (_, _) => const CompletePetOwnerProfileView(),
@@ -53,8 +55,13 @@ String? resolveRedirect({
     return AppRoutes.public.contains(location) ? null : AppRoutes.welcome;
   }
 
-  // 3. Con sesión pero sin saber si tiene perfil: pantalla de carga.
+  // 3. Contraseña temporal (vet creado por la clínica): primero debe cambiarla.
   final session = iam.session!;
+  if (session.mustChangePassword) {
+    return location == AppRoutes.changePassword ? null : AppRoutes.changePassword;
+  }
+
+  // 4. Con sesión pero sin saber si tiene perfil: pantalla de carga.
   switch (profiles.status) {
     case ProfileStatus.unknown:
       return location == AppRoutes.boot ? null : AppRoutes.boot;
