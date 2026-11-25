@@ -354,7 +354,11 @@ class _LastConsultation extends StatelessWidget {
     } else if (consultations.isEmpty) {
       body = AppCard(child: Text('${pet.name} aún no tiene consultas registradas.', style: muted));
     } else {
-      body = ConsultationTile(consultation: consultations.first);
+      final last = consultations.first;
+      body = ConsultationTile(
+        consultation: last,
+        onTap: () => context.push(AppRoutes.petConsultation(pet.id, last.id)),
+      );
     }
 
     return Column(
@@ -363,7 +367,7 @@ class _LastConsultation extends StatelessWidget {
         SectionHeader(
           title: 'Última atención',
           actionLabel: consultations?.isNotEmpty == true ? 'Ver historial' : null,
-          onAction: () => context.push(AppRoutes.pet(pet.id)),
+          onAction: () => context.push(AppRoutes.petHistory(pet.id)),
         ),
         const SizedBox(height: 8),
         body,
@@ -383,8 +387,8 @@ class _QuickActions extends StatelessWidget {
       QuickActionCard(
         icon: Icons.folder_shared_outlined,
         title: 'Historia clínica',
-        subtitle: 'Consultas y ficha',
-        onTap: pet == null ? null : () => context.push(AppRoutes.pet(pet!.id)),
+        subtitle: 'Línea de tiempo',
+        onTap: pet == null ? null : () => context.push(AppRoutes.petHistory(pet!.id)),
       ),
       const QuickActionCard(
         icon: Icons.medication_outlined,
