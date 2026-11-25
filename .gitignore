@@ -46,3 +46,15 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Flutter / Dart generados
+**/generated_plugin_registrant.*
+**/GeneratedPluginRegistrant.*
+windows/flutter/ephemeral/
+linux/flutter/ephemeral/
+macos/Flutter/ephemeral/
+
+linux/flutter/generated_plugins.cmake
+windows/flutter/generated_plugins.cmake
+linux/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.cc
