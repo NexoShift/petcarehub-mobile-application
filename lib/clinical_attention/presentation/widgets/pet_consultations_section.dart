@@ -1,0 +1,82 @@
+import 'package:material_ui/material_ui.dart';
+import 'package:provider/provider.dart';
+
+import '../../../shared/presentation/theme/app_colors.dart';
+import '../../../shared/presentation/widgets/section_header.dart';
+import '../../application/consultations_store.dart';
+import 'consultation_tile.dart';
+
+/// "Atenciones clínicas" de una mascota (lista de consultas, la más reciente primero).
+class PetConsultationsSection extends StatefulWidget {
+  const PetConsultationsSection({super.key, required this.petId, this.limit});
+
+  final int petId;
+
+  /// Cuántas mostrar (null = todas).
+  final int? limit;
+
+  @override
+  State<PetConsultationsSection> createState() => _PetConsultationsSectionState();
+}
+
+class _PetConsultationsSectionState extends State<PetConsultationsSection> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<ConsultationsStore>().loadForPet(widget.petId),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<ConsultationsStore>();
+    final consultations = store.consultationsOf(widget.petId);
+    final error = store.errorOf(widget.petId);
+    final muted = Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted);
+
+    Widget body;
+    if (consultations == null && error == null) {
+      body = const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    } else if (error != null) {
+      body = Row(
+        children: [
+          Expanded(child: Text('No se pudieron cargar las consultas.', style: muted)),
+          TextButton(
+            onPressed: () => store.loadForPet(widget.petId, force: true),
+            child: const Text('Reintentar'),
+          ),
+        ],
+      );
+    } else if (consultations!.isEmpty) {
+      body = Text('Aún no tiene consultas registradas.', style: muted);
+    } else {
+      final shown = widget.limit == null
+          ? consultations
+          : consultations.take(widget.limit!).toList();
+      body = Column(
+        children: [
+          for (final c in shown) ...[
+            ConsultationTile(consultation: c),
+            const SizedBox(height: 8),
+          ],
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeader(
+          title: 'Atenciones clínicas'
+              '${consultations == null || consultations.isEmpty ? '' : ' (${consultations.length})'}',
+        ),
+        const SizedBox(height: 8),
+        body,
+      ],
+    );
+  }
+}
