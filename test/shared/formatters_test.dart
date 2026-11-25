@@ -19,6 +19,10 @@ void main() {
     expect(Formatters.date(DateTime(2026, 9, 12)), '12 sep 2026');
   });
 
+  test('fecha y hora', () {
+    expect(Formatters.dateTime(DateTime(2026, 9, 12, 8, 5)), '12 sep 2026, 08:05');
+  });
+
   test('PickedImage valida tipo y tamaño como el backend', () {
     expect(fakeImage().isAllowedType, isTrue);
     expect(fakeImage(mimeType: 'image/gif').isAllowedType, isFalse);
