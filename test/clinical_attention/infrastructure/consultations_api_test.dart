@@ -231,6 +231,15 @@ void main() {
       await expectLater(missing.getByPet(9), throwsCode(ClinicalAttentionErrorCode.petNotFound));
     });
 
+    test('422 al crear: la mascota no es paciente de la clínica', () async {
+      await expectLater(
+        api(status: 422, body: {'message': 'x'}).create(
+          CreateClinicalConsultationCommand(petId: 9, clinicId: 5, reason: 'Tos'),
+        ),
+        throwsCode(ClinicalAttentionErrorCode.petNotPatient),
+      );
+    });
+
     test('400, 401, 403 y 500', () async {
       for (final (status, code) in [
         (400, ClinicalAttentionErrorCode.invalidRequest),

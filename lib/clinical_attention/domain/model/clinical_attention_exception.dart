@@ -7,6 +7,7 @@ enum ClinicalAttentionErrorCode {
   invalidVitalSigns,
   invalidCancellation,
   petNotFound,
+  petNotPatient,
   consultationNotFound,
   invalidConsultationState,
   incompleteConsultation,

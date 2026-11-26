@@ -6,6 +6,8 @@ String clinicalErrorMessage(ClinicalAttentionErrorCode code) => switch (code) {
   ClinicalAttentionErrorCode.invalidVitalSigns => 'Revisa las constantes: peso hasta 500 kg, temperatura entre 30 y 45 °C y frecuencias mayores que 0.',
   ClinicalAttentionErrorCode.invalidCancellation => 'Indica el motivo de la cancelación.',
   ClinicalAttentionErrorCode.petNotFound => 'La mascota indicada no existe.',
+  ClinicalAttentionErrorCode.petNotPatient =>
+    'La mascota no es paciente de tu clínica. Regístrala como paciente antes de crear la consulta.',
   ClinicalAttentionErrorCode.consultationNotFound => 'La consulta no existe.',
   ClinicalAttentionErrorCode.invalidConsultationState =>
     'La consulta ya cambió de estado. Vuelve a cargarla.',

@@ -16,6 +16,8 @@ abstract final class ClinicalErrorAssembler {
     403 => const ClinicalAttentionException(ClinicalAttentionErrorCode.notAllowed),
     404 => ClinicalAttentionException(notFound),
     409 => _conflict(conflict, error.details),
+    // Al crear: la mascota existe, pero no es paciente de la clínica.
+    422 => const ClinicalAttentionException(ClinicalAttentionErrorCode.petNotPatient),
     _ => const ClinicalAttentionException(ClinicalAttentionErrorCode.unexpected),
   };
 
