@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../clinical_exams/presentation/views/clinical_exam_detail_view.dart';
 import '../home/presentation/views/home_shell.dart';
 import '../home/presentation/views/home_view.dart';
 import '../iam/application/iam_store.dart';
@@ -91,6 +92,11 @@ GoRouter createRouter({required IamStore iam, required ProfilesStore profiles}) 
       GoRoute(
         path: '/patients/:petId',
         builder: (_, state) => PetDetailView(petId: petIdOf(state)),
+      ),
+      GoRoute(
+        path: '/clinical-exams/:examId',
+        builder: (_, state) =>
+            ClinicalExamDetailView(examId: int.parse(state.pathParameters['examId']!)),
       ),
     ],
   );

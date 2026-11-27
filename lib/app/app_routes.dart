@@ -20,6 +20,7 @@ class AppRoutes {
   static String pet(int petId) => '/pets/$petId';
   static String editPet(int petId) => '/pets/$petId/edit';
   static String patient(int petId) => '/patients/$petId';
+  static String clinicalExam(int examId) => '/clinical-exams/$examId';
 
   /// Pantallas que se ven sin sesión.
   static const public = {welcome, signIn, signUp};

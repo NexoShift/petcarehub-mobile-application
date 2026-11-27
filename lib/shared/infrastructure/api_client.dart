@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
@@ -33,6 +34,15 @@ class ApiClient {
 
   Future<dynamic> get(String path, {Map<String, String>? query}) =>
       _send(() => _http.get(uri(path, query), headers: _headers()));
+
+  /// GET of a binary file (clinical file download): returns the raw bytes instead of JSON.
+  Future<Uint8List> getBytes(String path) async {
+    final response = await _execute(
+      () => _http.get(uri(path), headers: {..._headers(), 'Accept': '*/*'}),
+    );
+    if (response.statusCode >= 200 && response.statusCode < 300) return response.bodyBytes;
+    throw _failure(response);
+  }
 
   Future<dynamic> post(String path, {Object? body}) =>
       _send(() => _http.post(uri(path), headers: _headers(json: true), body: jsonEncode(body)));
@@ -92,21 +102,25 @@ class ApiClient {
   }
 
   Future<dynamic> _send(Future<http.Response> Function() request) async {
-    final http.Response response;
+    final response = await _execute(request);
+    if (response.statusCode >= 200 && response.statusCode < 300) return _decode(response);
+    throw _failure(response);
+  }
+
+  Future<http.Response> _execute(Future<http.Response> Function() request) async {
     try {
-      response = await request().timeout(Environment.requestTimeout);
+      return await request().timeout(Environment.requestTimeout);
     } on TimeoutException {
       throw const ApiError(status: 0, message: 'El servidor tardó demasiado en responder.');
     } on http.ClientException {
       // http envuelve los errores de red (SocketException, CORS en web) en ClientException.
       throw const ApiError(status: 0, message: 'No hay conexión con el servidor.');
     }
+  }
 
-    final body = _decode(response);
-    if (response.statusCode >= 200 && response.statusCode < 300) return body;
-
+  ApiError _failure(http.Response response) {
     if (response.statusCode == 401 && _tokens.token != null) _tokens.onUnauthorized();
-    throw _toApiError(response.statusCode, body);
+    return _toApiError(response.statusCode, _decode(response));
   }
 
   dynamic _decode(http.Response response) {

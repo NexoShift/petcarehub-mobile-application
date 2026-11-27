@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../app/app_routes.dart';
 import '../../../../clinical_attention/presentation/widgets/pet_consultations_section.dart';
+import '../../../../clinical_exams/presentation/widgets/pet_clinical_exams_section.dart';
 import '../../../../shared/domain/api_error.dart';
 import '../../../../shared/presentation/formatters.dart';
 import '../../../../shared/presentation/theme/app_colors.dart';
@@ -89,6 +90,11 @@ class _PetDetailViewState extends State<PetDetailView> {
                           _Clinics(clinics: detail.clinics, isOwner: widget.canEdit),
                           const SizedBox(height: 24),
                           PetConsultationsSection(petId: widget.petId),
+                          const SizedBox(height: 24),
+                          PetClinicalExamsSection(
+                            petId: widget.petId,
+                            canRequest: !widget.canEdit,
+                          ),
                         ],
                       ),
                     ),

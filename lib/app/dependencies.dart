@@ -6,6 +6,9 @@ import 'package:provider/provider.dart';
 import '../clinical_attention/application/consultations_store.dart';
 import '../clinical_attention/domain/repositories/consultations_repository.dart';
 import '../clinical_attention/infrastructure/consultations_api.dart';
+import '../clinical_exams/application/clinical_exams_store.dart';
+import '../clinical_exams/domain/repositories/clinical_exams_repository.dart';
+import '../clinical_exams/infrastructure/clinical_exams_api.dart';
 import '../iam/application/iam_store.dart';
 import '../iam/domain/repositories/auth_repository.dart';
 import '../iam/infrastructure/auth_api.dart';
@@ -32,6 +35,7 @@ Widget buildApp({
   ProfilesRepository? profilesRepository,
   PetsRepository? petsRepository,
   ConsultationsRepository? consultationsRepository,
+  ClinicalExamsRepository? clinicalExamsRepository,
   ImagePickerService? imagePicker,
   bool useGoogleFonts = true,
 }) {
@@ -52,6 +56,9 @@ Widget buildApp({
   final consultationsStore = ConsultationsStore(
     repository: consultationsRepository ?? ConsultationsApi(apiClient),
   );
+  final clinicalExamsStore = ClinicalExamsStore(
+    repository: clinicalExamsRepository ?? ClinicalExamsApi(apiClient),
+  );
 
   // Al cerrar sesión no deben quedar datos del usuario anterior en memoria.
   iamStore.addListener(() {
@@ -59,6 +66,7 @@ Widget buildApp({
       petsStore.clear();
       patientsStore.clear();
       consultationsStore.clear();
+      clinicalExamsStore.clear();
     }
   });
 
@@ -72,6 +80,7 @@ Widget buildApp({
       ChangeNotifierProvider.value(value: petsStore),
       ChangeNotifierProvider.value(value: patientsStore),
       ChangeNotifierProvider.value(value: consultationsStore),
+      ChangeNotifierProvider.value(value: clinicalExamsStore),
     ],
     child: PetCareHubApp(router: router, useGoogleFonts: useGoogleFonts),
   );
