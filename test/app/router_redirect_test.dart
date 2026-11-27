@@ -78,6 +78,10 @@ void main() {
     expect(go(AppRoutes.pets), AppRoutes.home);
     expect(go(AppRoutes.pet(3)), AppRoutes.home);
     expect(go(AppRoutes.patient(3)), isNull);
+    expect(go(AppRoutes.patientHistory(3)), isNull);
+    expect(go(AppRoutes.consultations), isNull);
+    expect(go(AppRoutes.consultation(8)), isNull);
+    expect(go(AppRoutes.petHistory(3)), AppRoutes.home);
 
     await iam.signOut();
     profilesRepo.petOwnersByUserId[1] = roberto;
@@ -86,6 +90,12 @@ void main() {
     expect(go(AppRoutes.patient(3)), AppRoutes.home);
     expect(go(AppRoutes.pet(3)), isNull);
     expect(go(AppRoutes.newPet), isNull);
+    expect(go(AppRoutes.petHistory(3)), isNull);
+    expect(go(AppRoutes.petConsultation(3, 8)), isNull);
+    expect(go(AppRoutes.patientHistory(3)), AppRoutes.home);
+    expect(go(AppRoutes.consultations), AppRoutes.home);
+    expect(go(AppRoutes.newConsultation()), AppRoutes.home);
+    expect(go(AppRoutes.consultation(8)), AppRoutes.home);
     expect(go(AppRoutes.profile), isNull);
   });
 }

@@ -1,8 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:petcare_mobile_application/clinical_attention/domain/model/consultation_status.dart';
-import 'package:petcare_mobile_application/clinical_attention/domain/model/consultation_summary.dart';
-import 'package:petcare_mobile_application/clinical_attention/domain/repositories/consultations_repository.dart';
 import 'package:petcare_mobile_application/iam/domain/model/account_type.dart';
 import 'package:petcare_mobile_application/iam/domain/model/user_session.dart';
 import 'package:petcare_mobile_application/iam/domain/repositories/auth_repository.dart';
@@ -18,6 +15,8 @@ import 'package:petcare_mobile_application/profiles/domain/repositories/profiles
 import 'package:petcare_mobile_application/shared/domain/api_error.dart';
 import 'package:petcare_mobile_application/shared/domain/picked_image.dart';
 import 'package:petcare_mobile_application/shared/infrastructure/image_picker_service.dart';
+
+export 'clinical_fakes.dart';
 
 UserSession ownerSession({int userId = 1, String token = 'jwt-owner'}) => UserSession(
       userId: userId,
@@ -364,36 +363,6 @@ class FakePetsRepository implements PetsRepository {
     list.add(petId);
   }
 }
-
-class FakeConsultationsRepository implements ConsultationsRepository {
-  final Map<int, List<ConsultationSummary>> byPet = {};
-  int calls = 0;
-
-  @override
-  Future<List<ConsultationSummary>> getByPet(int petId) async {
-    calls++;
-    return byPet[petId] ?? const [];
-  }
-}
-
-ConsultationSummary consultation({
-  int id = 1,
-  int petId = 1,
-  String reason = 'Pododermatitis',
-  ConsultationStatus status = ConsultationStatus.completed,
-  DateTime? date,
-  String? diagnosis,
-}) =>
-    ConsultationSummary(
-      id: id,
-      petId: petId,
-      clinicId: 5,
-      reason: reason,
-      status: status,
-      createdAt: date ?? DateTime(2026, 9, 12),
-      completedAt: date ?? DateTime(2026, 9, 12),
-      mainDiagnosis: diagnosis,
-    );
 
 class FakeImagePicker implements ImagePickerService {
   PickedImage? next;

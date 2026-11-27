@@ -4,16 +4,30 @@ import 'package:provider/provider.dart';
 import '../../../shared/presentation/theme/app_colors.dart';
 import '../../../shared/presentation/widgets/section_header.dart';
 import '../../application/consultations_store.dart';
+import '../../domain/model/aggregates/clinical_consultation.dart';
 import 'consultation_tile.dart';
 
 /// "Atenciones clínicas" de una mascota (lista de consultas, la más reciente primero).
 class PetConsultationsSection extends StatefulWidget {
-  const PetConsultationsSection({super.key, required this.petId, this.limit});
+  const PetConsultationsSection({
+    super.key,
+    required this.petId,
+    this.limit,
+    this.onOpen,
+    this.onSeeAll,
+    this.onRegister,
+  });
 
   final int petId;
 
   /// Cuántas mostrar (null = todas).
   final int? limit;
+
+  final ValueChanged<ClinicalConsultation>? onOpen;
+  final VoidCallback? onSeeAll;
+
+  /// Abrir una consulta nueva. Solo el veterinario.
+  final VoidCallback? onRegister;
 
   @override
   State<PetConsultationsSection> createState() => _PetConsultationsSectionState();
@@ -23,9 +37,9 @@ class _PetConsultationsSectionState extends State<PetConsultationsSection> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ConsultationsStore>().loadForPet(widget.petId),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<ConsultationsStore>().loadForPet(widget.petId);
+    });
   }
 
   @override
@@ -60,22 +74,36 @@ class _PetConsultationsSectionState extends State<PetConsultationsSection> {
       body = Column(
         children: [
           for (final c in shown) ...[
-            ConsultationTile(consultation: c),
+            ConsultationTile(
+              consultation: c,
+              onTap: widget.onOpen == null ? null : () => widget.onOpen!(c),
+            ),
             const SizedBox(height: 8),
           ],
         ],
       );
     }
 
+    final hasAny = consultations != null && consultations.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SectionHeader(
-          title: 'Atenciones clínicas'
-              '${consultations == null || consultations.isEmpty ? '' : ' (${consultations.length})'}',
+          title: 'Atenciones clínicas${hasAny ? ' (${consultations.length})' : ''}',
+          actionLabel: hasAny && widget.onSeeAll != null ? 'Ver historia' : null,
+          onAction: widget.onSeeAll,
         ),
         const SizedBox(height: 8),
         body,
+        if (widget.onRegister != null) ...[
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            key: const Key('pet.newConsultation'),
+            onPressed: widget.onRegister,
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('Nueva consulta'),
+          ),
+        ],
       ],
     );
   }

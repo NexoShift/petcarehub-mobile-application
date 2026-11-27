@@ -1,4 +1,5 @@
-/// Estado de la consulta (ConsultationStatus del backend).
+/// Estado de la consulta (ConsultationStatus del backend):
+/// CREATED → IN_PROGRESS → COMPLETED, o CANCELLED antes de finalizar.
 enum ConsultationStatus {
   created('CREATED', 'Programada'),
   inProgress('IN_PROGRESS', 'En curso'),

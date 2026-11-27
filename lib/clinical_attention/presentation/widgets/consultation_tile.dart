@@ -3,27 +3,21 @@ import 'package:material_ui/material_ui.dart';
 import '../../../shared/presentation/formatters.dart';
 import '../../../shared/presentation/theme/app_colors.dart';
 import '../../../shared/presentation/widgets/app_card.dart';
-import '../../../shared/presentation/widgets/status_chip.dart';
-import '../../domain/model/consultation_status.dart';
-import '../../domain/model/consultation_summary.dart';
+import '../../domain/model/aggregates/clinical_consultation.dart';
+import 'consultation_status_chip.dart';
 
 /// Tarjeta de una consulta: fecha, estado, motivo y diagnóstico principal.
 class ConsultationTile extends StatelessWidget {
-  const ConsultationTile({super.key, required this.consultation});
+  const ConsultationTile({super.key, required this.consultation, this.onTap});
 
-  final ConsultationSummary consultation;
-
-  static Color colorFor(ConsultationStatus status) => switch (status) {
-        ConsultationStatus.completed => AppColors.success,
-        ConsultationStatus.inProgress => AppColors.turquoise,
-        ConsultationStatus.created => AppColors.warning,
-        ConsultationStatus.cancelled => AppColors.textMuted,
-      };
+  final ClinicalConsultation consultation;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return AppCard(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -37,15 +31,14 @@ class ConsultationTile extends StatelessWidget {
                   style: text.labelMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
-              StatusChip(
-                label: consultation.status.label,
-                color: colorFor(consultation.status),
-              ),
+              ConsultationStatusChip(consultation.status),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             consultation.reason.isEmpty ? 'Consulta clínica' : consultation.reason,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
             style: text.titleSmall?.copyWith(fontWeight: FontWeight.w700, color: AppColors.navy),
           ),
           if (consultation.mainDiagnosis != null) ...[
@@ -69,6 +62,24 @@ class ConsultationTile extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+          ],
+          if (onTap != null) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    consultation.isInProgress ? 'Ver consulta en curso' : 'Ver detalle de consulta',
+                    style: text.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.navy,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.arrow_forward, size: 16, color: AppColors.navy),
+              ],
             ),
           ],
         ],

@@ -88,7 +88,25 @@ class _PetDetailViewState extends State<PetDetailView> {
                           const SizedBox(height: 24),
                           _Clinics(clinics: detail.clinics, isOwner: widget.canEdit),
                           const SizedBox(height: 24),
-                          PetConsultationsSection(petId: widget.petId),
+                          PetConsultationsSection(
+                            petId: widget.petId,
+                            limit: 3,
+                            onOpen: (consultation) => context.push(
+                              widget.canEdit
+                                  ? AppRoutes.petConsultation(widget.petId, consultation.id)
+                                  : AppRoutes.consultation(consultation.id),
+                            ),
+                            onSeeAll: () => context.push(
+                              widget.canEdit
+                                  ? AppRoutes.petHistory(widget.petId)
+                                  : AppRoutes.patientHistory(widget.petId),
+                            ),
+                            onRegister: widget.canEdit
+                                ? null
+                                : () => context.push(
+                                    AppRoutes.newConsultation(petId: widget.petId),
+                                  ),
+                          ),
                         ],
                       ),
                     ),

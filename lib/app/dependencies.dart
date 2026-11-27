@@ -3,8 +3,12 @@ import 'package:http/http.dart' as http;
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../clinical_attention/application/consultation_workspace_store.dart';
 import '../clinical_attention/application/consultations_store.dart';
+import '../clinical_attention/application/outbound_services/external_profiles_service.dart';
+import '../clinical_attention/application/patient_directory_store.dart';
 import '../clinical_attention/domain/repositories/consultations_repository.dart';
+import '../clinical_attention/infrastructure/acl/profiles_acl_service.dart';
 import '../clinical_attention/infrastructure/consultations_api.dart';
 import '../iam/application/iam_store.dart';
 import '../iam/domain/repositories/auth_repository.dart';
@@ -32,6 +36,7 @@ Widget buildApp({
   ProfilesRepository? profilesRepository,
   PetsRepository? petsRepository,
   ConsultationsRepository? consultationsRepository,
+  ExternalProfilesService? externalProfilesService,
   ImagePickerService? imagePicker,
   bool useGoogleFonts = true,
 }) {
@@ -42,15 +47,21 @@ Widget buildApp({
     repository: authRepository ?? AuthApi(apiClient),
     storage: sessionStorage,
   );
-  final profilesStore = ProfilesStore(
-    repository: profilesRepository ?? ProfilesApi(apiClient),
-    iamStore: iamStore,
-  );
+  final profilesRepo = profilesRepository ?? ProfilesApi(apiClient);
+  final profilesStore = ProfilesStore(repository: profilesRepo, iamStore: iamStore);
   final petsRepo = petsRepository ?? PetsApi(apiClient);
   final petsStore = PetsStore(repository: petsRepo);
   final patientsStore = ClinicPatientsStore(repository: petsRepo);
-  final consultationsStore = ConsultationsStore(
-    repository: consultationsRepository ?? ConsultationsApi(apiClient),
+  final consultationsRepo = consultationsRepository ?? ConsultationsApi(apiClient);
+  final consultationsStore = ConsultationsStore(repository: consultationsRepo);
+  final workspaceStore = ConsultationWorkspaceStore(
+    repository: consultationsRepo,
+    consultations: consultationsStore,
+  );
+  final directoryStore = PatientDirectoryStore(
+    profiles:
+        externalProfilesService ??
+        ProfilesAclService(pets: petsRepo, profiles: profilesRepo, client: apiClient),
   );
 
   // Al cerrar sesión no deben quedar datos del usuario anterior en memoria.
@@ -59,6 +70,8 @@ Widget buildApp({
       petsStore.clear();
       patientsStore.clear();
       consultationsStore.clear();
+      workspaceStore.clear();
+      directoryStore.clear();
     }
   });
 
@@ -72,6 +85,8 @@ Widget buildApp({
       ChangeNotifierProvider.value(value: petsStore),
       ChangeNotifierProvider.value(value: patientsStore),
       ChangeNotifierProvider.value(value: consultationsStore),
+      ChangeNotifierProvider.value(value: workspaceStore),
+      ChangeNotifierProvider.value(value: directoryStore),
     ],
     child: PetCareHubApp(router: router, useGoogleFonts: useGoogleFonts),
   );
